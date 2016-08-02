@@ -9,19 +9,35 @@ include_once(dirname(__FILE__) .'/rsys_html_minimizer.php');
 
 /* CONSTANTS
 **********************/
-define("SITE_ROOT", "D:/Work/I+D/minimize/tool");// LOCAL
+define("SITE_ROOT", "D:/Work/rsys-html-minifier/src");// LOCAL
 //define("SITE_ROOT", "D:/Websites/wumndermanlab/www/dev/mmpot/minimizer");// DEV
 
-define("SITE_URL", "http://localhost/I+D/minimize/tool");// LOCAL
+define("SITE_URL", "http://10.246.18.105/rsys-html-minifier/src");// LOCAL
 //define("SITE_URL", "http://wundermanlab.com.ar/mmpot/dev/minimize");// DEV
 
 define("UPLOAD_FOLDER", SITE_ROOT . "/temp");
 define("DOWNLOAD_FOLDER", SITE_URL . "/temp");
 
 
+/*	GLOBALS
+**********************/
+$feedback = [];
+
 
 /*	FUNCTIONS
 **********************/
+
+/*	Output the html of the feedback messages */
+function feedback($styles){
+	global $feedback;
+	
+	$output = "";
+	foreach( $feedback as $feed){
+		$output .= '<p class="msg bg-'.$feed[0].'">'.$feed[1].'</p>';
+	}
+	echo '<div class="feedback '.$styles.'">' . $output . '</div>';
+}
+
 
 /* Unarchive tar files */
 function unarchive_tar($file, $extract_folder){

@@ -11,13 +11,23 @@ if (isset($_POST['action']) && $_POST['action'] != ""){
 
 
 // Minifice and download zip file
+
 if( $action == "batch_tar" && isset($_FILES)){
-	$zip_file_server = minimize_batch_tar();	
 	
-	header("Content-Type: application/zip");
-    header("Content-Disposition: attachment; filename=" . basename($_SESSION["download_zip"]));
-    header("Content-Length: " . filesize($zip_file_server));
-    readfile($zip_file_server);
+	$ext = pathinfo($_FILES['frm_tar']['name'], PATHINFO_EXTENSION);
+	
+	if( $ext == "tar"){
+		$zip_file_server = minimize_batch_tar();	
+		/*
+		header("Content-Type: application/zip");
+		header("Content-Disposition: attachment; filename=" . basename($_SESSION["download_zip"]));
+		header("Content-Length: " . filesize($zip_file_server));
+		readfile($zip_file_server);
+		*/		
+		$feedback[] = array('success', 'Minification successful. <a href="'. $_SESSION["download_zip"] .'">Download minimized .zip</a>.');
+	}else{
+		$feedback[] = array('warning', 'Only files with <strong>.tar</strong> extension are allowed.');
+	}
 }
 
 ?>
@@ -30,11 +40,17 @@ if( $action == "batch_tar" && isset($_FILES)){
 	<!-- STYLES -->
 	<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
 	<style>
-	html, body{
-		margin: 0;
-		padding: 0;
-		height: 100%;
-	}
+		html, body{
+			margin: 0;
+			padding: 0;
+			height: 100%;
+		}
+		/* HELPERS */
+		.feedback .msg{
+			padding: 15px;
+		}
+		
+		/* STYLES */
 		#results{
 			margin-top: 1.5em;
 		}
@@ -65,12 +81,19 @@ if( $action == "batch_tar" && isset($_FILES)){
 			text-align: center;
 			z-index: 11;
 		}
+		#tab-direct-input textarea{
+			width: 100%;
+			max-width: 100%;
+		}
 	</style>
 </head>
 <body class="container-fluid">
 
 
 	<div id="wrapper" class="row">
+		
+		<?php feedback('col-sm-8 col-sm-offset-2'); ?>
+	
 		<header id="header" class="col-sm-8 col-sm-offset-2">
 			<h1>MMP HTML Minimizer Tool</h1>
 		</header>
@@ -79,36 +102,63 @@ if( $action == "batch_tar" && isset($_FILES)){
 			
 			
 				<form id="form" class="form" action="index.php" method="POST" enctype="multipart/form-data">
-					<h3>Batch minimizer for tar files</h3>
-					<div class="form-group">
-						<input type="file" id="frm-tar" name="frm_tar">
-						<input type="hidden" name="action" value="batch_tar">
+				
+					<ul class="nav nav-tabs" role="tablist">
+						<li role="presentation" class="active"><a href="#tab-batch" aria-controls="home" role="tab" data-toggle="tab">Batch</a></li>
+						<li role="presentation"><a href="#tab-direct-input" aria-controls="profile" role="tab" data-toggle="tab">Direct Input</a></li>
+						<li role="presentation" class="pull-right"><a href="#tab-help" aria-controls="messages" role="tab" data-toggle="tab">Help</a></li>
+					</ul>
+					<!-- Tab panes -->
+					<div class="tab-content">
+						<div role="tabpanel" class="tab-pane active" id="tab-batch">
+							<h3>Batch minimizer</h3>
+							
+							
+							<?php
+							if( isset($_SESSION["download_zip"]) ){
+							?>
+							<a href="<?php echo $_SESSION["download_zip"]; ?>" class="btn btn-success">Download minimized result</a>
+							<a href="index.php" class="btn btn-primary">Reset</a>
+							<?php
+							}else{
+							?>
+							<div class="form-group col-sm-8">
+								<input type="file" id="frm-tar" name="frm_tar" class="">
+								<input type="hidden" name="action" value="batch_tar">
+							</div>
+							<button id="btn-batch" class="btn btn-primary" type="submit" name="submit">Upload and minimize</button>
+							<?php
+							}
+							?>
+							
+							<hr>
+							
+							<p>Upload the archives .tar file exported by the CMS.</p>
+						</div>
+						<div role="tabpanel" class="tab-pane" id="tab-direct-input">
+						
+							<h3>Direct input minimizer</h3>
+							<div class="form-group">
+								<textarea id="frm-source" cols="90" rows="10"></textarea>
+							</div>
+							<button id="btn-minimize" class="btn btn-primary" type="button">Minimize</button>
+							
+							<div id="results" class="visible">
+								<h4>Results</h4>
+								<textarea id="frm-output" cols="90" rows="10"></textarea>
+							</div>
+							
+						</div>
+						<div role="tabpanel" class="tab-pane" id="tab-help">
+						</div>
 					</div>
-					<button id="btn-batch" class="btn btn-primary" type="submit" name="submit">Batch minimize</button>
+				
 					
-					<?php
-					if($action=="batch_tar"){
-					?>
-					<a href="<?php echo $_SESSION["download_zip"]; ?>">Download minimized result</a>
-					<?php
-					}
-					?>
-					
-					
-					<hr>
-					<h3>HTML code minimize</h3>
-					<div class="form-group">
-						<textarea id="frm-source" cols="90" rows="10"></textarea>
-					</div>
-					<button id="btn-minimize" class="btn btn-primary" type="button">Minimize</button>
 					
 				
 				</form><!-- /#form -->
 				
-				<div id="results" class="visible">
-					<h4>Results</h4>
-					<textarea id="frm-output" cols="90" rows="10"></textarea>
-				</div>
+				
 				
 				
 			</div><!-- /#content -->
@@ -119,7 +169,12 @@ if( $action == "batch_tar" && isset($_FILES)){
 	
 	<!-- SCRIPTS -->
 	<script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+	<script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+	<script src="//rawgit.com/Lukas238/better-input-file/master/src/betterInputFileButton.js"></script>
 	<script>
+		$('input:file').betterInputFile({
+			'btnClass': 'btn btn-secondary'
+		});
 		
 		$('#btn-minimize').on('click', function(){
 			
@@ -142,3 +197,7 @@ if( $action == "batch_tar" && isset($_FILES)){
 	
 </body>
 </html>
+<?php
+	session_unset(); 
+	session_destroy(); 
+?>
