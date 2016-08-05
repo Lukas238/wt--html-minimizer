@@ -1,8 +1,5 @@
 <?php
-session_start();
-
 include_once(dirname(__FILE__) .'/inc/functions.php');
-
 
 $action = false;
 if (isset($_POST['action']) && $_POST['action'] != ""){
@@ -17,14 +14,20 @@ if( $action == "batch_tar" && isset($_FILES)){
 	$ext = pathinfo($_FILES['frm_tar']['name'], PATHINFO_EXTENSION);
 	
 	if( $ext == "tar"){
-		$zip_file_server = minimize_batch_tar();	
+		
+		$minimize_results = minimize_batch_tar();
+		
+		$minimize_results["files_path"];
+		
+		//print_r($minimize_results);// DEBUG
+		
 		/*
 		header("Content-Type: application/zip");
 		header("Content-Disposition: attachment; filename=" . basename($_SESSION["download_zip"]));
-		header("Content-Length: " . filesize($zip_file_server));
-		readfile($zip_file_server);
+		header("Content-Length: " . filesize($minimize_results["file_path"];));
+		readfile($minimize_results["file_path"];);
 		*/		
-		$feedback[] = array('success', 'Minification successful. <a href="'. $_SESSION["download_zip"] .'">Download minimized .zip</a>.');
+		$feedback[] = array('success', 'Minification successful. '.$minimize_results['ratio'].'% compressed.');
 	}else{
 		$feedback[] = array('warning', 'Only files with <strong>.tar</strong> extension are allowed.');
 	}
@@ -115,9 +118,23 @@ if( $action == "batch_tar" && isset($_FILES)){
 							
 							
 							<?php
-							if( isset($_SESSION["download_zip"]) ){
+							if( isset($minimize_results["files_url"]) ){
 							?>
-							<a href="<?php echo $_SESSION["download_zip"]; ?>" class="btn btn-success">Download minimized result</a>
+								<h4>Download minimized zip files</h4>
+								<ul>
+									<?php
+									foreach($minimize_results["files_url"] as $file_link ){
+									?>
+									<li><a href="<?php echo $file_link; ?>">Download <?php echo basename($file_link); ?></a></li>
+									<?php					
+									}
+									?>
+								</ul>
+							<?php					
+								
+							?>
+							
+							
 							<a href="index.php" class="btn btn-primary">Reset</a>
 							<?php
 							}else{
@@ -150,6 +167,25 @@ if( $action == "batch_tar" && isset($_FILES)){
 							
 						</div>
 						<div role="tabpanel" class="tab-pane" id="tab-help">
+							<h3>What this tool does?</h3>
+							
+							<ol>
+								<li>Compress all HTML code in a single line.</li>
+								<li>Removes all tab characters.</li>
+								<li>Remove all HTML comments, with some exceptions:
+									<ul>
+										<li>The tool will remove any HTML comment, but eny RSYS function will be respected, and will be left unchanged.</li>
+										<li>The tool will ignore any IE conditional comment.</li>
+										<li>The tool will ignore any <strong>special</strong> comment starting with two asteriscs.
+										<br />
+										Ex.:&lt;!--** Keep this comment! --&gt;</li>
+									</ul>
+								</li>
+								<li>Remove white spaces before and after the folowing tags: &lt;html&gt;, &lt;body&gt;, &lt;head&gt;, &lt;meta&gt;, &lt;style&gt;, &lt;table&gt;, &lt;tr&gt;, and &lt;td&gt;.</li>
+								<li>Removes spaces between attributes in the tags, except in the &lt;img&gt; tag (RSYS breaks image attribute src there is no spaces before or after it).</li>
+								<li>Convert multiple consecutive white spaces into a single white space.</li>
+							</ol>
+						
 						</div>
 					</div>
 				
@@ -197,7 +233,3 @@ if( $action == "batch_tar" && isset($_FILES)){
 	
 </body>
 </html>
-<?php
-	session_unset(); 
-	session_destroy(); 
-?>
