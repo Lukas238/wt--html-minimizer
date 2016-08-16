@@ -18,6 +18,17 @@ function rsys_minimize_html($input_code){
 	// Removes tab character
 	$input_code = preg_replace( "/\t/", "", $input_code );
 	
+	//Removes CSS comments (from CSS and HTML). Ex.: /* This is a CSS comment */
+	$input_code = preg_replace( "/\/\*[^*]*\*\//", "", $input_code );
+	
+	/*
+	*	Update old module ID comment to the special comment notation
+	* for backguar compatibility
+	*
+	*/
+	//$input_code = preg_replace("/<!--( (?:HERO|PRIMARY|TERTIARY|BANNER|FOOTNOTE)(?: OFFER|):[^>]* -->)/m", "<!--**$1", $input_code );//After
+	
+	
 	/*
 	*	Remove HTML comments but keep RESPONSYS functions
 	*
@@ -35,6 +46,7 @@ function rsys_minimize_html($input_code){
 				$rsys_function = implode($rsys_function[0],'');//Keep RSYS functions
 				$return_var .= $rsys_function;
 			}
+			
 		}
 		return $return_var;
 		
