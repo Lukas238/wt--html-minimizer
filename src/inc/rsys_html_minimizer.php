@@ -18,7 +18,7 @@ function rsys_minimize_html($input_code){
 	// Removes tab character
 	$input_code = preg_replace( "/\t/", "", $input_code );
 	
-	//Removes CSS comments (from CSS and HTML). Ex.: /* This is a CSS comment */
+	//Removes CSS comments (from CSS and HTML comments). Ex.: /* This is a CSS comment */
 	$input_code = preg_replace( "/\/\*[^*]*\*\//", "", $input_code );
 	
 	/*

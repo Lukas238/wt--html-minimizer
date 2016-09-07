@@ -3,21 +3,16 @@
 
 /*	INCLUDES
 ***********************/
-include_once(dirname(__FILE__) .'/rsys_html_minimizer.php');
+include_once( __DIR__ . DIRECTORY_SEPARATOR . 'config.php');
+include_once( __DIR__ . DIRECTORY_SEPARATOR . 'rsys_html_minimizer.php');
 
 
 /* CONSTANTS
 **********************/
-define("DOMAIN", "http://localhost");
-
-define("SITE_ROOT", "D:/Work/rsys-html-minifier/src");// LOCAL
-//define("SITE_ROOT", "D:/Websites/wumndermanlab/www/dev/mmpot/minimizer");// DEV
-
-define("SITE_URL", DOMAIN."/rsys-html-minifier/src");// LOCAL
-//define("SITE_URL", "http://wundermanlab.com.ar/mmpot/dev/minimize");// DEV
-
-define("UPLOAD_FOLDER", SITE_ROOT . "/temp");
-define("DOWNLOAD_FOLDER", SITE_URL . "/temp");
+define("UPLOAD_FOLDER", SITE_ROOT . DIRECTORY_SEPARATOR . "tmp");
+define("DOWNLOAD_URL", SITE_URL . "/tmp");
+define("EXPORT_FILE_NAME", "export_");
+define("FILES_PER_ZIP", 100);
 
 
 /*	GLOBALS
@@ -50,7 +45,8 @@ function unarchive_tar($file, $extract_folder){
 
 
 /* creates a compressed zip file */
-function create_zip($files = array(),$destination = '',$overwrite = false, $limit_files = 100) {
+function create_zip($files = array(),$destination = '',$overwrite = false, $limit_files = FILES_PER_ZIP) {
+	
 	//if the zip file already exists and overwrite is false, return false
 	if(file_exists($destination) && !$overwrite) { return false; }
 	//vars
@@ -60,11 +56,13 @@ function create_zip($files = array(),$destination = '',$overwrite = false, $limi
 		//cycle through each file
 		foreach($files as $file) {
 			//make sure the file exists
+
 			if(file_exists($file)) {
 				$valid_files[] = $file;
 			}
 		}
 	}
+	
 	//if we have good files...
 	if(count($valid_files)) {
 		
@@ -74,25 +72,30 @@ function create_zip($files = array(),$destination = '',$overwrite = false, $limi
 		//add the files
 		$i = 0;
 		$file_num = 1;
-		$zip_filesnames = array();
+		$zip_parts = array();
 		foreach($valid_files as $file) {
 			
+			$zip_part_name = $destination."_".$file_num.".zip";
 			if( $i % $limit_files == 0 ){
 				$zip = new ZipArchive();
-				if($zip->open($destination."_".$file_num.".zip",$overwrite ? ZIPARCHIVE::OVERWRITE : ZIPARCHIVE::CREATE) !== true) {
+				if( $zip->open($zip_part_name, ZIPARCHIVE::CREATE | ZIPARCHIVE::OVERWRITE) !== true) {
 					return false;
 				}				
 			}
 			
 			$zip->addFile($file,basename($file)); //Add current file
 			
-			
-			
 			if( $i % $limit_files == ($limit_files -1) || count($valid_files)-1 == $i ){
-				//close the zip -- done!
 				$zip->close();
 				
-				$zip_filesnames[] = $destination."_".$file_num.".zip";
+				ob_start();
+				echo file_get_contents( $zip_part_name );
+				$content = ob_get_contents();
+				ob_end_clean();
+				
+				$zip_parts[] = "data:application/zip;base64," . base64_encode($content);
+				
+				unlink($zip_part_name);
 				$file_num++;
 			}
 			
@@ -103,16 +106,18 @@ function create_zip($files = array(),$destination = '',$overwrite = false, $limi
 		
 		//print_r(glob(dirname($files[0])."/*.*"));
 		//echo dirname($files[0]);
-		array_map('unlink', glob(dirname($files[0])."/*.htm") );
-		rmdir(dirname($files[0]));
 		
+		array_map('unlink', glob(dirname($files[0]). DIRECTORY_SEPARATOR ."*.htm") );
+		rmdir(dirname($files[0]));
+	
 		
 		//check to make sure the file exists
-		return $zip_filesnames;
+		return $zip_parts;
 		
 	}
 	else
 	{
+		echo "Fail";
 		return false;
 	}
 }
@@ -124,20 +129,20 @@ function create_zip($files = array(),$destination = '',$overwrite = false, $limi
 function minimize_batch_tar(){
 
 	$temp_file = $_FILES['frm_tar']['tmp_name'];
-	$extract_folder = UPLOAD_FOLDER ."/". basename($temp_file, ".tmp");
-	$download_folder = DOWNLOAD_FOLDER ."/". basename($temp_file, ".tmp");
+	$extract_folder = UPLOAD_FOLDER . DIRECTORY_SEPARATOR . basename($temp_file, ".tmp");
+	$download_url = DOWNLOAD_URL . "/" . basename($temp_file, ".tmp");
 	$folder_name = basename($_FILES['frm_tar']['name'], ".tar");
-	$files_folder = $extract_folder . "/". $folder_name;
+	$files_folder = $extract_folder . DIRECTORY_SEPARATOR . $folder_name;
 
+	
 	//Extract the temp zip file content to a new temp folder
 	unarchive_tar($temp_file, $extract_folder);
+	
 
 	$files_list=[];
 	//Loop files
 	$filesize_new = $filesize_org = 0;
-	foreach (glob($files_folder ."/*.htm") as $filename) {
-		
-		
+	foreach (glob($files_folder . DIRECTORY_SEPARATOR . "*.htm") as $filename) {		
 		$filesize_org += filesize($filename);
 		clearstatcache();
 		
@@ -150,17 +155,12 @@ function minimize_batch_tar(){
 		};
 	}
 	
+	$zip_files_path= create_zip($files_list, $extract_folder . DIRECTORY_SEPARATOR . $folder_name, true, 100);
 	
-	$zip_files_path= create_zip($files_list, $extract_folder .'/'. $folder_name, true, 100);
-	$zip_files_url = [];
-	foreach($zip_files_path as $file){
-		$zip_files_url[] = $download_folder .'/'. basename($file);
-	}
-	
+	rmdir($extract_folder);
 	
 	return array(
 		"files_path" => $zip_files_path,
-		"files_url" => $zip_files_url,
 		"files_list" => $files_list,
 		"size" => $filesize_new,
 		"size_org" => $filesize_org,

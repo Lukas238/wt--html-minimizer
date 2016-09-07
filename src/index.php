@@ -1,5 +1,5 @@
 <?php
-include_once(dirname(__FILE__) .'/inc/functions.php');
+include_once(__DIR__ .'/inc/functions.php');
 
 $action = false;
 if (isset($_POST['action']) && $_POST['action'] != ""){
@@ -19,14 +19,8 @@ if( $action == "batch_tar" && isset($_FILES)){
 		
 		$minimize_results["files_path"];
 		
-		//print_r($minimize_results);// DEBUG
-		
-		/*
-		header("Content-Type: application/zip");
-		header("Content-Disposition: attachment; filename=" . basename($_SESSION["download_zip"]));
-		header("Content-Length: " . filesize($minimize_results["file_path"];));
-		readfile($minimize_results["file_path"];);
-		*/		
+		//print_r($minimize_results["files_path"]);// DEBUG
+			
 		$feedback[] = array('success', 'Minification successful. '.$minimize_results['ratio'].'% compressed.');
 	}else{
 		$feedback[] = array('warning', 'Only files with <strong>.tar</strong> extension are allowed.');
@@ -118,14 +112,16 @@ if( $action == "batch_tar" && isset($_FILES)){
 							
 							
 							<?php
-							if( isset($minimize_results["files_url"]) ){
+							if( isset($minimize_results["files_path"]) ){
 							?>
 								<h4>Download minimized zip files</h4>
 								<ul>
 									<?php
-									foreach($minimize_results["files_url"] as $file_link ){
+									foreach($minimize_results["files_path"] as $key => $file_data ){
+										
+										$file_name = EXPORT_FILE_NAME . $key . ".zip";
 									?>
-									<li><a href="<?php echo $file_link; ?>">Download <?php echo basename($file_link); ?></a></li>
+									<li><a href="<?php echo $file_data; ?>" download="<?php echo $file_name; ?>"><?php echo $file_name; ?></a></li>
 									<?php					
 									}
 									?>
@@ -139,18 +135,25 @@ if( $action == "batch_tar" && isset($_FILES)){
 							<?php
 							}else{
 							?>
+							<div class="form-group col-sm-12">
+								<p>Upload the archives .tar file exported by the CMS.</p>
+							</div>
 							<div class="form-group col-sm-8">
 								<input type="file" id="frm-tar" name="frm_tar" class="">
 								<input type="hidden" name="action" value="batch_tar">
+								<p class="text-muted">Limit the number of files to <?php echo FILES_PER_ZIP;?> files in each zip file.</p>
 							</div>
-							<button id="btn-batch" class="btn btn-primary" type="submit" name="submit">Upload and minimize</button>
+							<div class="form-group col-sm-4">
+								<button id="btn-batch" class="btn btn-primary" type="submit" name="submit">Upload and minimize</button>
+							</div>
+							
 							<?php
 							}
 							?>
 							
 							<hr>
 							
-							<p>Upload the archives .tar file exported by the CMS.</p>
+							
 						</div>
 						<div role="tabpanel" class="tab-pane" id="tab-direct-input">
 						
