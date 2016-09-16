@@ -17,22 +17,10 @@ define("FILES_PER_ZIP", 100);
 
 /*	GLOBALS
 **********************/
-$feedback = [];
 
 
 /*	FUNCTIONS
 **********************/
-
-/*	Output the html of the feedback messages */
-function feedback($styles){
-	global $feedback;
-	
-	$output = "";
-	foreach( $feedback as $feed){
-		$output .= '<p class="msg bg-'.$feed[0].'">'.$feed[1].'</p>';
-	}
-	echo '<div class="feedback '.$styles.'">' . $output . '</div>';
-}
 
 
 /* Unarchive tar files */
