@@ -18,7 +18,7 @@ if( $action == "batch_tar" && isset($_FILES)){
 	
 	$ext = pathinfo($_FILES['frm_tar']['name'], PATHINFO_EXTENSION);
 	
-	if( $ext == "tar"){
+	if( $ext == "tar" || $ext == "zip"){
 		
 		$minimize_results = minimize_batch_tar();
 		
@@ -129,9 +129,6 @@ if( $action == "batch_tar" && isset($_FILES)){
 							<?php
 							}else{
 							?>
-							<div class="form-group col-sm-12">
-								<p>Upload the archives .tar file exported by the CMS.</p>
-							</div>
 							<div class="form-group col-sm-8">
 								<input type="file" id="frm-tar" name="frm_tar" class="">
 								<input type="hidden" name="action" value="batch_tar">
@@ -139,6 +136,13 @@ if( $action == "batch_tar" && isset($_FILES)){
 							</div>
 							<div class="form-group col-sm-4">
 								<button id="btn-batch" class="btn btn-primary btn-mobile" type="submit" name="submit">Upload and minimize</button>
+							</div>
+							<div class="form-group col-sm-12">
+								<p>Valid files:</p>
+								<ul>
+									<li>.tar files exported by Responsys</li>
+									<li>.zip files with .htm or .html files inside.</li>
+								</ul>
 							</div>
 							
 							<?php
@@ -169,13 +173,16 @@ if( $action == "batch_tar" && isset($_FILES)){
 							<ol>
 								<li>Compress all HTML code in a single line.</li>
 								<li>Removes all tab characters.</li>
-								<li>Remove all HTML comments, with some exceptions:
+								<li>Remove all HTML comments and content, with some exceptions:
 									<ul>
-										<li>The tool will remove any HTML comment, but eny RSYS function will be respected, and will be left unchanged.</li>
-										<li>The tool will ignore any IE conditional comment.</li>
-										<li>The tool will ignore any <strong>special</strong> comment starting with two asteriscs.
+										<li>RSYS function inside comments.</li>
+										<li>IE conditional comment.</li>
+										<li><em>Special comment</em>, starting with two asteriscs.
 										<br />
 										Ex.:&lt;!--** Keep this comment! --&gt;</li>
+										<li>Empty comments, since they are used to target Outlook.
+										<br />
+										Ex.:&lt;!-- --&gt;</li>
 									</ul>
 								</li>
 								<li>Remove white spaces before and after the folowing tags: &lt;html&gt;, &lt;body&gt;, &lt;head&gt;, &lt;meta&gt;, &lt;style&gt;, &lt;table&gt;, &lt;tr&gt;, and &lt;td&gt;.</li>
@@ -212,6 +219,7 @@ if( $action == "batch_tar" && isset($_FILES)){
 		
 		$('#btn-minimize').on('click', function(){
 			
+			$('#frm-output').val('');
 			var $data = $('#frm-source').val();
 			
 			$.ajax({

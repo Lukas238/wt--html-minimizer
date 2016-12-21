@@ -23,7 +23,7 @@ function rsys_minimize_html($input_code){
 	
 	/*
 	*	Update old module ID comment to the special comment notation
-	* for backguar compatibility
+	* for backgward compatibility
 	*
 	*/
 	//$input_code = preg_replace("/<!--( (?:HERO|PRIMARY|TERTIARY|BANNER|FOOTNOTE)(?: OFFER|):[^>]* -->)/m", "<!--**$1", $input_code );//After
@@ -45,6 +45,10 @@ function rsys_minimize_html($input_code){
 			if( preg_match_all('/(\$[^\s$]+[^\$]+\$)/m', $line, $rsys_function)){ //Search for any RSYS function
 				$rsys_function = implode($rsys_function[0],'');//Keep RSYS functions
 				$return_var .= $rsys_function;
+			}
+			
+			if( preg_match_all('/(<!-- -->)/', $line, $empty_comment)){ //Search for any RSYS function
+				$return_var .= implode($empty_comment[0], '');
 			}
 			
 		}
