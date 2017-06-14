@@ -23,7 +23,7 @@ function rsys_minimize_html($input_code){
 	
 	/*
 	*	Update old module ID comment to the special comment notation
-	* for backguar compatibility
+	* for backgward compatibility
 	*
 	*/
 	//$input_code = preg_replace("/<!--( (?:HERO|PRIMARY|TERTIARY|BANNER|FOOTNOTE)(?: OFFER|):[^>]* -->)/m", "<!--**$1", $input_code );//After
@@ -47,10 +47,17 @@ function rsys_minimize_html($input_code){
 				$return_var .= $rsys_function;
 			}
 			
+			if( preg_match_all('/(<!-- -->)/', $line, $empty_comment)){ //Search for any RSYS function
+				$return_var .= implode($empty_comment[0], '');
+			}
+			
 		}
 		return $return_var;
 		
 	}, $input_code);
+	
+	$input_code = preg_replace( "/\/\*[^*]+\*{2,}\//", "", $input_code ); //Remove title comments. Ex.: "/* STYLES **************************/"
+	
 	$input_code = preg_replace( "/".NEWLINE."/", "", $input_code );
 
 	// Remove white spaces between any table family tags
@@ -62,7 +69,7 @@ function rsys_minimize_html($input_code){
 	
 	//Removes spaces between attributes in the tags
 	$input_code = preg_replace_callback('~<[^img](.*?)>~i', function($m) { //Loop tags
-		$return_var = preg_replace('/([a-z]*="[^"]*")[\s]*/mi', '$1', $m[0]); // Remove space.
+		$return_var = preg_replace('/([a-z]*="[^"]*")[\s]{2,}/mi', '$1', $m[0]); // Remove space.
 		return $return_var;
 	}, $input_code);
 	

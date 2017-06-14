@@ -11,39 +11,43 @@ include_once( __DIR__ . DIRECTORY_SEPARATOR . 'rsys_html_minimizer.php');
 **********************/
 define("UPLOAD_FOLDER", SITE_ROOT . DIRECTORY_SEPARATOR . "tmp");
 define("DOWNLOAD_URL", SITE_URL . "/tmp");
+define("EXPORT_FILE_NAME", "export_");
+define("FILES_PER_ZIP", 100);
 
 
 /*	GLOBALS
 **********************/
-$feedback = [];
 
 
 /*	FUNCTIONS
 **********************/
 
-/*	Output the html of the feedback messages */
-function feedback($styles){
-	global $feedback;
-	
-	$output = "";
-	foreach( $feedback as $feed){
-		$output .= '<p class="msg bg-'.$feed[0].'">'.$feed[1].'</p>';
-	}
-	echo '<div class="feedback '.$styles.'">' . $output . '</div>';
-}
-
 
 /* Unarchive tar files */
-function unarchive_tar($file, $extract_folder){
-	// unarchive from the tar
-	$phar = new PharData($file);
-	$phar->extractTo($extract_folder); 
-	return true;
+function unarchive($file, $extract_folder, $file_ext){
+	//Extract the temp  compressed file content to a new temp folder
+	switch( $file_ext ){
+		case 'tar':
+			$phar = new PharData($file);
+			$phar->extractTo($extract_folder); 
+			return true;
+			break;
+			
+		default: // ZIP
+			$zip = new ZipArchive;
+			if ($zip->open($file) === TRUE) {
+				$zip->extractTo($extract_folder);
+				$zip->close();
+				return true;
+			} else {
+				return false;
+			}
+	}	
 }
 
 
 /* creates a compressed zip file */
-function create_zip($files = array(),$destination = '',$overwrite = false, $limit_files = 100) {
+function create_zip($files = array(),$destination = '',$overwrite = false, $limit_files = FILES_PER_ZIP) {
 	
 	//if the zip file already exists and overwrite is false, return false
 	if(file_exists($destination) && !$overwrite) { return false; }
@@ -54,7 +58,6 @@ function create_zip($files = array(),$destination = '',$overwrite = false, $limi
 		//cycle through each file
 		foreach($files as $file) {
 			//make sure the file exists
-
 			if(file_exists($file)) {
 				$valid_files[] = $file;
 			}
@@ -70,29 +73,34 @@ function create_zip($files = array(),$destination = '',$overwrite = false, $limi
 		//add the files
 		$i = 0;
 		$file_num = 1;
-		$zip_filesnames = array();
+		$zip_parts = array();
 		foreach($valid_files as $file) {
 			
+			$zip_part_name = $destination."_".$file_num.".zip";
 			if( $i % $limit_files == 0 ){
 				$zip = new ZipArchive();
-				if( $zip->open($destination."_".$file_num.".zip", ZIPARCHIVE::CREATE | ZIPARCHIVE::OVERWRITE) !== true) {
+				if( $zip->open($zip_part_name, ZIPARCHIVE::CREATE | ZIPARCHIVE::OVERWRITE) !== true) {
 					return false;
 				}				
 			}
 			
 			$zip->addFile($file,basename($file)); //Add current file
 			
-			
-			
 			if( $i % $limit_files == ($limit_files -1) || count($valid_files)-1 == $i ){
-				//close the zip -- done!
 				$zip->close();
 				
-				$zip_filesnames[] = $destination."_".$file_num.".zip";
+				ob_start();
+				echo file_get_contents( $zip_part_name );
+				$content = ob_get_contents();
+				ob_end_clean();
+				
+				$zip_parts[] = "data:application/zip;base64," . base64_encode($content);
+				
+				unlink($zip_part_name);
 				$file_num++;
 			}
 			
-			$i++;;
+			$i++;
 		}
 		//debug
 		//echo 'The zip archive contains ',$zip->numFiles,' files with a status of ',$zip->status;
@@ -100,17 +108,15 @@ function create_zip($files = array(),$destination = '',$overwrite = false, $limi
 		//print_r(glob(dirname($files[0])."/*.*"));
 		//echo dirname($files[0]);
 		
-		array_map('unlink', glob(dirname($files[0])."/*.htm") );
+		$glog_string = dirname($files[0]). DIRECTORY_SEPARATOR ."*.{htm,html}";
+		array_map('unlink', glob($glog_string, GLOB_BRACE) );
 		rmdir(dirname($files[0]));
-		
+	
 		
 		//check to make sure the file exists
-		return $zip_filesnames;
+		return $zip_parts;
 		
-	}
-	else
-	{
-		echo "Fail";
+	}else{
 		return false;
 	}
 }
@@ -121,48 +127,54 @@ function create_zip($files = array(),$destination = '',$overwrite = false, $limi
 */
 function minimize_batch_tar(){
 
-	$temp_file = $_FILES['frm_tar']['tmp_name'];
+	$temp_file      = $_FILES['frm_tar']['tmp_name'];
 	$extract_folder = UPLOAD_FOLDER . DIRECTORY_SEPARATOR . basename($temp_file, ".tmp");
-	$download_url = DOWNLOAD_URL . "/" . basename($temp_file, ".tmp");
-	$folder_name = basename($_FILES['frm_tar']['name'], ".tar");
-	$files_folder = $extract_folder . DIRECTORY_SEPARATOR . $folder_name;
-
+	$download_url   = DOWNLOAD_URL . "/" . basename($temp_file, ".tmp");
 	
-	//Extract the temp zip file content to a new temp folder
-	unarchive_tar($temp_file, $extract_folder);
+	$path_info      = pathinfo($_FILES['frm_tar']['name']);
+	$folder_name    = $path_info['filename'];
+	$file_ext       = $path_info['extension'];
+	$files_folder   = $extract_folder . ($file_ext == 'tar' ?  DIRECTORY_SEPARATOR . $folder_name : '') ;
+	
+	
+	unarchive($temp_file, $files_folder, $file_ext);
 	
 
 	$files_list=[];
 	//Loop files
 	$filesize_new = $filesize_org = 0;
-	foreach (glob($files_folder . DIRECTORY_SEPARATOR . "*.htm") as $filename) {		
+	$glog_string = $files_folder . DIRECTORY_SEPARATOR . "*.{htm,html}";
+		
+	foreach (glob($glog_string, GLOB_BRACE) as $filename) {	
 		$filesize_org += filesize($filename);
 		clearstatcache();
 		
 		$file_contents = file_get_contents($filename);
 		$file_contents = rsys_minimize_html($file_contents);
+
 		if( file_put_contents($filename, $file_contents) ){
 			$files_list[] = $filename;
 			
 			$filesize_new += filesize($filename);
 		};
 	}
+		
+	$zip_files_path= create_zip($files_list, $files_folder . DIRECTORY_SEPARATOR . $folder_name, true, 100);
 	
-	$zip_files_path= create_zip($files_list, $extract_folder . DIRECTORY_SEPARATOR . $folder_name, true, 100);
-	
-	$zip_files_url = [];
-	foreach($zip_files_path as $file){
-		$zip_files_url[] = $download_url . "/" . basename($file);
+	if( $file_ext  != 'zip' ){
+		rmdir($files_folder);
 	}
-	
-	
+
+	$ratio_val = 0;
+	if( $filesize_org >0){
+		$ratio_val = 100 - $filesize_new * 100 / $filesize_org;
+	}
 	return array(
 		"files_path" => $zip_files_path,
-		"files_url" => $zip_files_url,
 		"files_list" => $files_list,
 		"size" => $filesize_new,
 		"size_org" => $filesize_org,
-		"ratio" => number_format(100 - $filesize_new * 100 / $filesize_org, 2)
+		"ratio" => number_format($ratio_val, 2)
 	);
 }
 
