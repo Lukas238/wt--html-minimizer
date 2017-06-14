@@ -1,0 +1,60 @@
+<html>
+<body>
+
+    $setvars(select( lookup(TEMPLATE_WIDTH), 640,varlist(2, WIDTH1, WIDTH2, 640, 450),varlist(2, WIDTH1, WIDTH2, 670, 480)))$
+	
+	<!-- PREHEADER -->
+	<table width="$lookup(WIDTH1)$" border="0" cellspacing="0" cellpadding="0" class="width320">
+	  <tr>
+			<td bgcolor="#E6E6E6">
+				
+				<!-- margin -->
+				<table border="0" cellpadding="0" cellspacing="0"><tr><td height="10" style="line-height:10px; font-size:0px;"><img src="https://static.cdn.responsys.net/i2/responsysimages/content/united/sp.png" width="1" height="10" alt="" border="0" style="display:block;" /></td></tr></table>
+				<!--/margin -->
+				
+			  <table width="$lookup(WIDTH1)$" border="0" cellspacing="0" cellpadding="0" class="width320">
+					<tr>
+					  <td width="30" class="width20">
+							<img src="https://static.cdn.responsys.net/i2/responsysimages/content/united/sp.png" width="30" height="1" alt="" border="0" style="display:block;" class="width20" />
+					  </td>
+					  <td align="left" valign="top" width="$lookup(WIDTH2)$" class="width280">
+							<div style="font-family: $lookup(FONT_FAMILY)$; color:#333333; font-size:10px; line-height:12px; font-weight:normal;" class="FS11 LH13">
+								
+								$cond(eq(lookup(CAMPAIGN), IMMP), Alguns links abaixo direcionam voc&ecirc; a sites em ingl&ecirc;s. <br/>, nothing())$
+								
+								
+								Para garantir a entrega em sua caixa de entrada de e-mail, por favor, adicione
+								<a href="$clickthrough(Template_Add_to_Address_PT,ONEPASS_NUMBER,CAMPAIGN_CODE,CELL_CODE,DROP_DATE,POS)$" target="_blank" style="color:#333333; font-weight:normal; text-decoration:underline; font-size:10px; line-height:12px;">					
+									$select(lookup(OPT),MPPR,MileagePlus,MPPT,MileagePlus_Partner,UADL,UnitedAirlines,OPST,MyMileagePlus)$@news.united.com</a> em sua lista de&nbsp;contatos.
+							</div>
+							
+							<!-- margin -->
+							<table border="0" cellpadding="0" cellspacing="0"><tr><td height="10" style="line-height:10px; font-size:0px;"><img src="https://static.cdn.responsys.net/i2/responsysimages/content/united/sp.png" width="1" height="10"
+								  alt="" border="0" style="display:block;" /></td></tr></table>
+							<!--/margin -->
+						
+					  </td>
+					  <td align="right" valign="bottom" width="130" class="hide">
+							<div style="font-family: $lookup(FONT_FAMILY)$; color:#333333; font-size:10px; line-height:12px; font-weight:normal;">
+
+								<a href="$clickthrough(Template_Online_Version,ONEPASS_NUMBER,CAMPAIGN_CODE,CELL_CODE,DROP_DATE)$" style="color:#333333; font-weight:normal; text-decoration:underline;" target="_blank">Visualizar no navegador&nbsp;da&nbsp;Web</a>
+							</div>
+						
+							<!-- margin -->
+							<table border="0" cellpadding="0" cellspacing="0"><tr><td height="10" style="line-height:10px; font-size:0px;"><img src="https://static.cdn.responsys.net/i2/responsysimages/content/united/sp.png" width="1" height="10" alt="" border="0" style="display:block;" /></td></tr></table>
+							<!--/margin -->
+						
+					  </td>
+					  <td width="30" class="width20">
+							<img src="https://static.cdn.responsys.net/i2/responsysimages/content/united/sp.png" width="30" height="1" alt="" border="0" style="display:block;" class="width20" />
+					  </td>
+					</tr>
+			  </table>
+			</td>
+	  </tr>
+	</table>
+	<!--/PREHEADER -->
+
+	
+</body>
+</html>

@@ -77,7 +77,7 @@ if( $action == "batch_tar" && isset($_FILES)){
 		
 		<header id="header">
 			<?php
-				wl_main_menu([
+				echo wl_main_menu([
 					'title'			=>	'HTML Minifier',
 					'logo'			=>	'images/logo.png',
 					'logo_title'	=>	'Where we pressure cook the HTML!'
