@@ -19,9 +19,9 @@ HTML compression tool which takes into account the idiosyncrasies of responsys p
 - RSYS function inside comments.
 - IE conditional comment.
 - Special comment, starting with two asteriscs. 
-- Ex.:<!--** Keep this comment! -->
+- Ex.:```<!--** Keep this comment! -->`` 
 - Empty comments, since they are used to target Outlook. 
-- Ex.:<!-- -->
-- Remove white spaces before and after the folowing tags: <html>, <body>, <head>, <meta>, <style>, <table>, <tr>, and <td>.
+- Ex.: ```<!-- -->```
+- Remove white spaces before and after the folowing tags: ```<html>```, ```<body>```, ```<head>```, ```<meta>```, ```<style>```, ```<table>```, ```<tr>```, and ```<td>```.
 - Removes spaces between attributes in the tags, except in the <img> tag (RSYS breaks image attribute src there is no spaces before or after it).
 - Convert multiple consecutive white spaces into a single white space.
