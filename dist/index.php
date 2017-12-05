@@ -51,7 +51,6 @@ if( $action == "batch_tar" && isset($_FILES)){
 	<!-- STYLES -->
 	<link rel="stylesheet" href="https://bootswatch.com/3/paper/bootstrap.min.css">
 	<?php wl_admin_css(); ?>
-	<link rel="stylesheet" href="<?php echo DOMAIN; ?>/admin/css/wl_login.css">
 	<style>
 		#main{
 			padding-top: 65px;
