@@ -49,9 +49,9 @@ if( $action == "batch_tar" && isset($_FILES)){
 	<link type="text/plain" rel="author" href="humans.txt">
 
 	<!-- STYLES -->
-	<link rel="stylesheet" href="//bootswatch.com/paper/bootstrap.min.css">
+	<link rel="stylesheet" href="https://bootswatch.com/3/paper/bootstrap.min.css">
 	<?php wl_admin_css(); ?>
-	<link rel="stylesheet" href="<?php echo DOMAIN; ?>/admin/wl_login.css">
+	<link rel="stylesheet" href="<?php echo DOMAIN; ?>/admin/css/wl_login.css">
 	<style>
 		#main{
 			padding-top: 65px;
