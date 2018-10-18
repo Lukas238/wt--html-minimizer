@@ -5,7 +5,7 @@ HTML compression tool which takes into account the idiosyncrasies of responsys p
 
 ## Links
 
-- **GIT**: <git@ec2-54-232-93-180.sa-east-1.compute.amazonaws.com:emailsfrontend-team/u-html-minifier.git>
+- **GIT**: <git@bitbucket-ssh.uhub.biz:7999/wunargua/u-html-minifier.git>
 - **URL**: http://52.67.28.91:9090/stage/tools/minifier/
 
 
